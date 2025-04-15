@@ -29,14 +29,17 @@ voicemails = []
 
 # Email utility
 def send_email_notification(subject, content, to_email):
-    sg = sendgrid.SendGridAPIClient(api_key=sendgrid_key)
-    message = Mail(
-        from_email='your@email.com',  # Change this
-        to_emails=to_email,
-        subject=subject,
-        plain_text_content=content
-    )
-    sg.send(message)
+    try:
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ['SENDGRID_API_KEY'])
+        message = Mail(
+            from_email='smartsnake90@gmail.com',
+            to_emails=to_email,
+            subject=subject,
+            plain_text_content=content
+        )
+        sg.send(message)
+    except Exception as e:
+        print("SendGrid email failed:", e)
 
 # Home (you can customize this or remove)
 @app.route('/')
@@ -92,7 +95,7 @@ def receive_sms():
     send_email_notification(
         subject="New SMS Received",
         content=f"From: {from_number}\nMessage: {body}",
-        to_email="your@email.com"
+        to_email="contact@helpingyousucceed.net"
     )
 
     return ('', 204)
@@ -105,6 +108,11 @@ def get_inbox():
 # Show voicemail page
 @app.route('/voicemail')
 def voicemail_page():
+    # send_email_notification(
+    #     subject="📩 New SMS",
+    #     content="Checking Twilio... If you receive this mail, please reply here",
+    #     to_email="contact@helpingyousucceed.net"
+    # )
     return render_template('voicemail.html')
 
 # Return voicemail list
