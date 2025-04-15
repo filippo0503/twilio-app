@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-4">Voicemails</h3>
+<div id="voicemailList" class="list-group">
+  <!-- Voicemails will be inserted here -->
+</div>
+
+<script>
+  async function loadVoicemails() {
+    const res = await fetch('/voicemails');
+    const voicemails = await res.json();
+
+    const list = document.getElementById('voicemailList');
+    list.innerHTML = '';
+
+    if (voicemails.length === 0) {
+      list.innerHTML = '<div class="alert alert-info">No voicemails yet.</div>';
+      return;
+    }
+
+    voicemails.reverse().forEach(vm => {
+      const item = document.createElement('div');
+      item.className = 'list-group-item';
+
+      item.innerHTML = `
+        <h5>From: ${vm.from}</h5>
+        <p><small>${vm.date}</small></p>
+        <audio controls src="${vm.url}" class="w-100"></audio>
+      `;
+
+      list.appendChild(item);
+    });
+  }
+
+  loadVoicemails();
+  setInterval(loadVoicemails, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-4">Send SMS</h3>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm p-4">
+      <form id="smsForm">
+        <div class="mb-3">
+          <label for="to" class="form-label">Phone Number</label>
+          <input type="text" class="form-control" id="to" name="to" placeholder="+1234567890" required>
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Message</label>
+          <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Send SMS</button>
+      </form>
+      <div id="result" class="mt-3"></div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm p-4">
+      <h5>Inbox</h5>
+      <div id="inbox" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+</div>
+
+<audio id="alertSound" src="/static/sounds/ding.mp3" preload="auto"></audio>
+
+<script>
+  const smsForm = document.getElementById('smsForm');
+  const result = document.getElementById('result');
+  const inbox = document.getElementById('inbox');
+  const alertSound = document.getElementById('alertSound');
+
+  let lastMessageCount = 0;
+
+  smsForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const to = document.getElementById('to').value;
+    const message = document.getElementById('message').value;
+
+    const res = await fetch('/send_sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ to, message })
+    });
+
+    const data = await res.json();
+    if (data.status === 'sent') {
+      result.innerHTML = `<div class="alert alert-success">✅ Message sent to ${to}</div>`;
+    } else {
+      result.innerHTML = `<div class="alert alert-danger">❌ Failed to send SMS.</div>`;
+    }
+
+    smsForm.reset();
+  });
+
+  async function loadInbox() {
+    const res = await fetch('/inbox');
+    const messages = await res.json();
+
+    if (messages.length > lastMessageCount) alertSound.play();
+    lastMessageCount = messages.length;
+
+    inbox.innerHTML = '';
+    messages.reverse().forEach(msg => {
+      const bubble = document.createElement('div');
+      bubble.className = 'p-2 bg-light rounded mb-2 border';
+      bubble.innerHTML = `<strong>${msg.from}</strong><br>${msg.body}<br><small>${msg.date}</small>`;
+      inbox.appendChild(bubble);
+    });
+  }
+
+  loadInbox();
+  setInterval(loadInbox, 5000);
+</script>
+{% endblock %}
