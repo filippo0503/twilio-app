@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">📊 Communication Dashboard</h2>
+
+<!-- Dashboard Content (SMS, Voicemails, Calls) -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">📩 Latest Text Messages</div>
+            <div id="smsInboxList" class="history-scroll card-body">
+                {% for msg in messages %}
+                <div class="border-bottom pb-2 mb-2">
+                    <strong>From:</strong> {{ msg.from }}<br>
+                    <strong>To:</strong> {{ msg.to }}<br>
+                    <strong>{{ msg.date }}</strong><br>
+                    <div>{{ msg.body }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- SMS Pagination -->
+            <div class="card-footer d-flex justify-content-between">
+                {% if sms_page > 1 %}
+                <a class="btn btn-outline-primary btn-sm"
+                    href="?sms_page={{ sms_page - 1 }}&call_page={{ call_page }}">← SMS Prev</a>
+                {% else %}<span></span>{% endif %}
+                {% if has_more_sms %}
+                <a class="btn btn-outline-primary btn-sm"
+                    href="?sms_page={{ sms_page + 1 }}&call_page={{ call_page }}">SMS Next →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">🔊 Voicemails</div>
+            <div class="card-body">
+                {% for vm in voicemails %}
+                <div class="border-bottom pb-2 mb-2">
+                    <strong>From:</strong> {{ vm.from }}<br>
+                    <small class="text-muted">{{ vm.date }}</small><br>
+                    <audio controls src="{{ vm.url }}" class="w-100 mt-1"></audio>
+                </div>
+                {% else %}
+                <p class="text-muted">No voicemails found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div> -->
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">📞 Call History</div>
+            <div class="card-body" id = "callHistory">
+                {% for call in call_logs %}
+                <div class="border-bottom pb-2 mb-2">
+                    <strong>From:</strong> {{ call.from }}<br>
+                    <strong>To:</strong> {{ call.to }}<br>
+                    <strong>Status:</strong> {{ call.status }}<br>
+                    <strong>Duration:</strong> {{ call.duration or '0' }} sec<br>
+                    {% if call.recording_url %}
+                    <audio controls src="{{ call.recording_url }}" class="w-100 mt-1"></audio>
+                    {% endif %}
+                    <small class="text-muted">{{ call.date }}</small>
+                </div>
+                {% else %}
+                <p class="text-muted">No call history found.</p>
+                {% endfor %}
+            </div>
+            <!-- Call Pagination -->
+            <div class="card-footer d-flex justify-content-between">
+                {% if call_page > 1 %}
+                <a class="btn btn-outline-dark btn-sm" href="?sms_page={{ sms_page }}&call_page={{ call_page - 1 }}">←
+                    Call Prev</a>
+                {% else %}<span></span>{% endif %}
+                {% if has_more_calls %}
+                <a class="btn btn-outline-dark btn-sm"
+                    href="?sms_page={{ sms_page }}&call_page={{ call_page + 1 }}">Call Next →</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

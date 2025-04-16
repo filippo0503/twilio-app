@@ -42,11 +42,18 @@
     const to = document.getElementById('to').value;
     const message = document.getElementById('message').value;
 
+    const from = localStorage.getItem('fromNumber');
     const res = await fetch('/send_sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ to, message })
+      body: new URLSearchParams({
+        to: document.getElementById('to').value,
+        message: document.getElementById('message').value,
+        from // 👈 make sure this is included!
+      })
     });
+
+
 
     const data = await res.json();
     if (data.status === 'sent') {
@@ -59,21 +66,27 @@
   });
 
   async function loadInbox() {
-    const res = await fetch('/inbox');
-    const messages = await res.json();
+      const from = localStorage.getItem('fromNumber');
+      const res = await fetch('/inbox?from=' + encodeURIComponent(from));
+      const messages = await res.json();
 
-    if (messages.length > lastMessageCount) alertSound.play();
-    lastMessageCount = messages.length;
+      // 🔔 Detect new messages
+      if (messages.length > lastMessageCount) {
+        document.getElementById('alertSound').play().catch(err => console.warn("Alert sound failed:", err));
+      }
 
-    inbox.innerHTML = '';
-    messages.reverse().forEach(msg => {
-      const bubble = document.createElement('div');
-      bubble.className = 'p-2 bg-light rounded mb-2 border';
-      bubble.innerHTML = `<strong>${msg.from}</strong><br>${msg.body}<br><small>${msg.date}</small>`;
-      inbox.appendChild(bubble);
-    });
-  }
+      lastMessageCount = messages.length;
 
+      const inbox = document.getElementById('inbox');
+      inbox.innerHTML = '';
+
+      messages.reverse().forEach(msg => {
+        const bubble = document.createElement('div');
+        bubble.className = 'p-2 bg-light rounded mb-2 border';
+        bubble.innerHTML = `<strong>${msg.from}</strong><br>${msg.body}<br><small>${msg.date}</small>`;
+        inbox.appendChild(bubble);
+      });
+    }
   loadInbox();
   setInterval(loadInbox, 5000);
 </script>

@@ -19,7 +19,11 @@
   let device;
 
   async function initTwilio() {
-    const res = await fetch('/token');
+    const from = localStorage.getItem('fromNumber'); // e.g. +15552223333
+    const identity = from.replace('+', '').replace(/\s+/g, '');
+    const res = await fetch(`/token?identity=${encodeURIComponent(identity)}`);
+
+
     const { token } = await res.json();
 
     device = new Twilio.Device(token, {
@@ -56,7 +60,10 @@
   document.getElementById('callBtn').onclick = () => {
     const number = document.getElementById('callTo').value;
     if (device) {
-      device.connect({ To: number });
+      const to = document.getElementById('callTo').value;
+      const from = localStorage.getItem('fromNumber');
+      device.connect({ To: to, From: from });
+
     }
   };
 

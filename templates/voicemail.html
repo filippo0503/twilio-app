@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <h3 class="mb-4">Voicemails</h3>
+
 <div id="voicemailList" class="list-group">
-  <!-- Voicemails will be inserted here -->
+  <!-- Voicemails will appear here -->
 </div>
 
 <script>
@@ -21,13 +22,11 @@
     voicemails.reverse().forEach(vm => {
       const item = document.createElement('div');
       item.className = 'list-group-item';
-
       item.innerHTML = `
-        <h5>From: ${vm.from}</h5>
-        <p><small>${vm.date}</small></p>
-        <audio controls src="${vm.url}" class="w-100"></audio>
+        <strong>From: ${vm.from}</strong><br>
+        <small>${vm.date}</small><br>
+        <audio controls src="${vm.url}" class="w-100 mt-2"></audio>
       `;
-
       list.appendChild(item);
     });
   }

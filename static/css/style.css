@@ -83,3 +83,9 @@ input {
     background-image: url('/static/images/user.png');
     background-size: cover;
 }
+
+.history-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
