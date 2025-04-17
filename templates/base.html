@@ -18,10 +18,13 @@
       <form class="d-flex ms-auto" onsubmit="return false;">
         <select id="fromNumber" class="form-select form-select-sm">
           {% for number in twilio_numbers %}
-          <option value="{{ number }}">{{ number }}</option>
+          <option value="{{ number }}" {% if number==selected_number %}selected{% endif %}>
+            {{ number }}
+          </option>
           {% endfor %}
         </select>
       </form>
+      
       <script>
         const select = document.getElementById('fromNumber');
         const saved = localStorage.getItem('fromNumber');
@@ -31,14 +34,12 @@
           const selected = select.value;
           localStorage.setItem('fromNumber', selected);
           const currentUrl = new URL(window.location.href);
-          if (currentUrl.pathname === '/dashboard') {
-            currentUrl.searchParams.set('from', selected);
-            window.location.href = currentUrl.toString();
-          }
+          currentUrl.searchParams.set('from', selected);
+          currentUrl.searchParams.set('sms_page', 1);
+          currentUrl.searchParams.set('call_page', 1);
+          window.location.href = currentUrl.toString();
         });
       </script>
-
-
 
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto">
@@ -47,9 +48,6 @@
           </li>
           <li class="nav-item">
             <a class="nav-link {% if title == 'SMS' %}active{% endif %}" href="/sms">SMS</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if title == 'Voicemail' %}active{% endif %}" href="/voicemail">Voicemail</a>
           </li>
         </ul>
       </div>
@@ -122,20 +120,27 @@
     }
   });
 
-  socket.on('new_voicemail', data => {
-    print("New VOice MAIL", data);
-    playDing();
-    showToast("📨 New voicemail received");
-    if (document.getElementById('voicemailList')) {
-      const div = document.createElement('div');
-      div.className = 'border-bottom pb-2 mb-2';
-      div.innerHTML = `
+  socket.on('new_call', data => {
+      playDing();
+      showToast("📞 New call from " + data.from);
+
+      const history = document.getElementById('callHistory');
+      if (history) {
+        const div = document.createElement('div');
+        div.className = 'border-bottom pb-2 mb-2';
+        div.innerHTML = `
+        <div class="position-absolute top-0 end-0 badge bg-danger me-2 mt-2">NEW</div>
         <strong>From:</strong> ${data.from}<br>
-        <strong>Date:</strong> ${data.date}<br>
-        <audio controls src="${data.url}"></audio>`;
-      voicemailList.prepend(div);
-    }
-  });
+        <strong>To:</strong> ${data.to}<br>
+        <strong>Status:</strong> ${data.status}<br>
+        <strong>Duration:</strong> ${data.duration || 0} sec<br>
+        ${data.recording_url ? `<audio controls src="${data.recording_url}" class="w-100 mt-1"></audio><br>` : ''}
+        <small class="text-muted">${data.date}</small>
+      `;
+
+        history.prepend(div);
+      }
+    });
   // playDing();
 </script>
 
